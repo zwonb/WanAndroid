@@ -43,6 +43,15 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+
+    applicationVariants.all { variant ->
+        sourceSets {
+            def name = variant.name
+            getByName(name) {  //告知IDE，ksp生成的kotlin代码
+                kotlin.srcDir("build/generated/ksp/$name/kotlin")
+            }
+        }
+    }
 }
 
 dependencies {
