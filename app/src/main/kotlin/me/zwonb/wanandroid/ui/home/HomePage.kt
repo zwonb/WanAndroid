@@ -36,7 +36,7 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
         })
     }) { padding ->
         val pagingItems = viewModel.flow.collectAsLazyPagingItems()
-        pagingItems.pagingStateBody(Modifier.padding(padding)) {
+        pagingItems.PagingStateBody(Modifier.padding(padding)) {
             ListBody(Modifier.padding(padding), pagingItems)
         }
     }
@@ -87,7 +87,7 @@ fun ItemBody(data: HomeBean.Data) {
 }
 
 @Composable
-fun <T : Any> LazyPagingItems<T>.pagingStateBody(modifier: Modifier, content: @Composable () -> Unit) {
+fun <T : Any> LazyPagingItems<T>.PagingStateBody(modifier: Modifier, content: @Composable () -> Unit) {
     when (val state = loadState.refresh) {
         is LoadState.Error -> StateBox(modifier, state.error.message.toString())
         LoadState.Loading -> StateBox(modifier, "加载中...")
