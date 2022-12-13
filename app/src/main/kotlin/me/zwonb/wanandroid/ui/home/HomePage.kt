@@ -89,7 +89,7 @@ fun ItemBody(data: HomeBean.Data) {
 @Composable
 fun <T : Any> LazyPagingItems<T>.PagingStateBody(modifier: Modifier, content: @Composable () -> Unit) {
     when (val state = loadState.refresh) {
-        is LoadState.Error -> StateBox(modifier, state.error.message.toString())
+        is LoadState.Error -> RetryBox(modifier, state.error.message.toString()) { retry() }
         LoadState.Loading -> StateBox(modifier, "加载中...")
         is LoadState.NotLoading -> content()
     }
@@ -102,11 +102,26 @@ fun StateBox(modifier: Modifier, text: String) {
     }
 }
 
+@Composable
+fun RetryBox(modifier: Modifier, text: String, retry: () -> Unit) {
+    Box(modifier.fillMaxSize().padding(12.dp), Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text, fontSize = 18.sp)
+            Spacer(Modifier.height(6.dp))
+            ElevatedButton(retry) {
+                Text("重试")
+            }
+        }
+    }
+}
+
 fun <T : Any> LazyListScope.pagingAppendItem(pagingItems: LazyPagingItems<T>) {
     when (val state = pagingItems.loadState.append) {
         is LoadState.Error -> item {
             Box(Modifier.fillMaxWidth(), Alignment.Center) {
-                Text(state.error.message.toString())
+                TextButton({ pagingItems.retry() }) {
+                    Text("重试")
+                }
             }
         }
 
