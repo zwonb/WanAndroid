@@ -1,5 +1,6 @@
 package me.zwonb.wanandroid.data
 
+import com.google.gson.JsonObject
 import me.zwonb.wanandroid.data.bean.BannerBean
 import me.zwonb.wanandroid.data.bean.BaseBean
 import me.zwonb.wanandroid.data.bean.HomeBean
@@ -17,4 +18,7 @@ class Repository @Inject constructor() {
 
     fun banner() = RxHttp.get("banner/json").toFlow<BaseBean<List<BannerBean>>>()
 
+    fun collect(id: Int) = RxHttp.postForm("lg/collect/$id/json")
+        .addHeader("")
+        .toFlow<BaseBean<JsonObject>>()
 }

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.onEach
 import me.zwonb.wanandroid.data.BasePagingSource
 import me.zwonb.wanandroid.data.Repository
 import me.zwonb.wanandroid.data.bean.BannerBean
+import me.zwonb.wanandroid.data.bean.HomeBean
+import me.zwonb.wanandroid.data.cookie
 import me.zwonb.wanandroid.util.logE
 import javax.inject.Inject
 
@@ -25,7 +27,8 @@ class HomeViewModel @Inject constructor(private val repository: Repository) : Vi
         BasePagingSource { repository.homeData(it).data.datas }
     }.flow.cachedIn(viewModelScope)
 
-    var bannerList by mutableStateOf<List<BannerBean>>(emptyList())
+    var state by mutableStateOf(HomeState())
+        private set
 
     init {
         banner()
@@ -33,10 +36,28 @@ class HomeViewModel @Inject constructor(private val repository: Repository) : Vi
 
     private fun banner() {
         repository.banner().onEach {
-            bannerList = it.data
+            state = state.copy(banner = it.data)
         }.catch {
             logE("banner", it)
         }.launchIn(viewModelScope)
     }
 
+    fun collect(data: HomeBean.Data?) {
+        data ?: return
+        if (cookie.isNullOrEmpty()) {
+            state = state.copy(loginDialog = true)
+        } else {
+            repository.collect(data.id)
+        }
+    }
+
+    fun dismissLogin(refresh: Boolean) {
+        state = state.copy(loginDialog = false, refresh = refresh)
+    }
+
 }
+
+data class HomeState(
+    val banner: List<BannerBean> = emptyList(), val loginDialog: Boolean = false,
+    val refresh: Boolean = false
+)

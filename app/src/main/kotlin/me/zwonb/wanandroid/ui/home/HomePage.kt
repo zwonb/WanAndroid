@@ -7,6 +7,7 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import me.zwonb.wanandroid.data.bean.HomeBean
+import me.zwonb.wanandroid.ui.component.TipDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,38 +44,29 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val bannerList = viewModel.bannerList
+                val bannerList = viewModel.state.banner
                 if (bannerList.isNotEmpty()) {
                     item(contentType = 1) { HomeBanner(bannerList, navController) }
                 }
                 items(pagingItems, key = { it.id }) { bean ->
-                    bean?.let { ItemBody(it) }
+                    ItemBody(bean) { viewModel.collect(bean) }
                 }
                 pagingAppendItem(pagingItems)
+            }
+        }
+        if (viewModel.state.loginDialog) {
+            TipDialog("请先登录", onConfirm = {
+                viewModel.dismissLogin(!viewModel.state.refresh)
+            }) {
+                viewModel.dismissLogin(viewModel.state.refresh)
             }
         }
     }
 }
 
 @Composable
-private fun ListBody(
-    modifier: Modifier,
-    pagingItems: LazyPagingItems<HomeBean.Data>
-) {
-    LazyColumn(
-        modifier,
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(pagingItems, key = { it.id }) { bean ->
-            bean?.let { ItemBody(it) }
-        }
-        pagingAppendItem(pagingItems)
-    }
-}
-
-@Composable
-fun ItemBody(data: HomeBean.Data) {
+fun ItemBody(data: HomeBean.Data?, onCollect: () -> Unit) {
+    data ?: return
     Surface(shadowElevation = 1.dp) {
         Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -92,10 +85,23 @@ fun ItemBody(data: HomeBean.Data) {
                     color = LocalContentColor.current.copy(ContentAlpha.disabled)
                 )
             }
-            IconButton({}) {
-                Icon(Icons.Default.FavoriteBorder, null)
+            IconButton(onCollect) {
+                if (data.collect) {
+                    Icon(Icons.Default.Favorite, null, tint = MaterialTheme.colorScheme.primary)
+                } else {
+                    Icon(Icons.Default.FavoriteBorder, null)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun LoginDialog(navController: NavHostController, dismiss: () -> Unit) {
+    TipDialog("请先登录", onConfirm = {
+        dismiss()
+    }) {
+        dismiss()
     }
 }
 
