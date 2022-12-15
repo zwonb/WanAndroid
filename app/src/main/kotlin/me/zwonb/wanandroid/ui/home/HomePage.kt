@@ -37,7 +37,20 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
     }) { padding ->
         val pagingItems = viewModel.flow.collectAsLazyPagingItems()
         pagingItems.PagingStateBody(Modifier.padding(padding)) {
-            ListBody(Modifier.padding(padding), pagingItems)
+            LazyColumn(
+                Modifier.padding(padding),
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val bannerList = viewModel.bannerList
+                if (bannerList.isNotEmpty()) {
+                    item(contentType = 1) { HomeBanner(bannerList, navController) }
+                }
+                items(pagingItems, key = { it.id }) { bean ->
+                    bean?.let { ItemBody(it) }
+                }
+                pagingAppendItem(pagingItems)
+            }
         }
     }
 }
