@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +39,11 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
         })
     }) { padding ->
         val pagingItems = viewModel.flow.collectAsLazyPagingItems()
+        LaunchedEffect(viewModel.refresh) {
+            viewModel.refresh.collect {
+               pagingItems.refresh()
+            }
+        }
         pagingItems.PagingStateBody(Modifier.padding(padding)) {
             LazyColumn(
                 Modifier.padding(padding),
@@ -56,9 +62,9 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
         }
         if (viewModel.state.loginDialog) {
             TipDialog("请先登录", onConfirm = {
-                viewModel.dismissLogin(!viewModel.state.refresh)
+                viewModel.dismissLogin()
             }) {
-                viewModel.dismissLogin(viewModel.state.refresh)
+                viewModel.dismissLogin()
             }
         }
     }
@@ -106,7 +112,10 @@ private fun LoginDialog(navController: NavHostController, dismiss: () -> Unit) {
 }
 
 @Composable
-fun <T : Any> LazyPagingItems<T>.PagingStateBody(modifier: Modifier, content: @Composable () -> Unit) {
+fun <T : Any> LazyPagingItems<T>.PagingStateBody(
+    modifier: Modifier,
+    content: @Composable () -> Unit
+) {
     when (val state = loadState.refresh) {
         is LoadState.Error -> RetryBox(modifier, state.error.message.toString()) { retry() }
         LoadState.Loading -> StateBox(modifier, "加载中...")
@@ -116,14 +125,22 @@ fun <T : Any> LazyPagingItems<T>.PagingStateBody(modifier: Modifier, content: @C
 
 @Composable
 fun StateBox(modifier: Modifier, text: String) {
-    Box(modifier.fillMaxSize().padding(12.dp), Alignment.Center) {
+    Box(
+        modifier
+            .fillMaxSize()
+            .padding(12.dp), Alignment.Center
+    ) {
         Text(text, fontSize = 18.sp)
     }
 }
 
 @Composable
 fun RetryBox(modifier: Modifier, text: String, retry: () -> Unit) {
-    Box(modifier.fillMaxSize().padding(12.dp), Alignment.Center) {
+    Box(
+        modifier
+            .fillMaxSize()
+            .padding(12.dp), Alignment.Center
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text, fontSize = 18.sp)
             Spacer(Modifier.height(6.dp))

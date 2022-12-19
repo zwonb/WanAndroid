@@ -9,9 +9,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.internal.ChannelFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import me.zwonb.wanandroid.data.BasePagingSource
 import me.zwonb.wanandroid.data.Repository
 import me.zwonb.wanandroid.data.bean.BannerBean
@@ -29,6 +32,7 @@ class HomeViewModel @Inject constructor(private val repository: Repository) : Vi
 
     var state by mutableStateOf(HomeState())
         private set
+    var refresh = MutableStateFlow<Int?>(null)
 
     init {
         banner()
@@ -51,13 +55,18 @@ class HomeViewModel @Inject constructor(private val repository: Repository) : Vi
         }
     }
 
-    fun dismissLogin(refresh: Boolean) {
-        state = state.copy(loginDialog = false, refresh = refresh)
+    fun dismissLogin() {
+        state = state.copy(loginDialog = false)
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            refresh.emit(0)
+        }
     }
 
 }
 
 data class HomeState(
     val banner: List<BannerBean> = emptyList(), val loginDialog: Boolean = false,
-    val refresh: Boolean = false
 )
