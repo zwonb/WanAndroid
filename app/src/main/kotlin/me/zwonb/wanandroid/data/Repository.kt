@@ -1,12 +1,12 @@
 package me.zwonb.wanandroid.data
 
-import com.google.gson.JsonObject
 import me.zwonb.wanandroid.data.bean.BannerBean
 import me.zwonb.wanandroid.data.bean.BaseBean
 import me.zwonb.wanandroid.data.bean.HomeBean
 import rxhttp.toAwait
 import rxhttp.toFlow
 import rxhttp.wrapper.param.RxHttp
+import rxhttp.wrapper.param.toFlowResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,6 +19,10 @@ class Repository @Inject constructor() {
     fun banner() = RxHttp.get("banner/json").toFlow<BaseBean<List<BannerBean>>>()
 
     fun collect(id: Int) = RxHttp.postForm("lg/collect/$id/json")
-        .addHeader("")
-        .toFlow<BaseBean<JsonObject>>()
+        .toFlowResponse<Any?>()
+
+    fun login(username: String,password: String) = RxHttp.postForm("user/login")
+        .add("username", username)
+        .add("password", password)
+        .toFlowResponse<Any?>()
 }

@@ -25,6 +25,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import me.zwonb.wanandroid.data.bean.HomeBean
+import me.zwonb.wanandroid.navigation.login
 import me.zwonb.wanandroid.ui.component.TipDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,7 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
         val pagingItems = viewModel.flow.collectAsLazyPagingItems()
         LaunchedEffect(viewModel.refresh) {
             viewModel.refresh.collect {
-               pagingItems.refresh()
+                pagingItems.refresh()
             }
         }
         pagingItems.PagingStateBody(Modifier.padding(padding)) {
@@ -63,6 +64,7 @@ fun HomePage(navController: NavHostController, viewModel: HomeViewModel = hiltVi
         if (viewModel.state.loginDialog) {
             TipDialog("请先登录", onConfirm = {
                 viewModel.dismissLogin()
+                navController.navigate(login)
             }) {
                 viewModel.dismissLogin()
             }
